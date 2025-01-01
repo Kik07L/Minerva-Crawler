@@ -13,17 +13,16 @@ def google_search(query, max_results=5):
         soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        for item in soup.select("a"):
-            link = item.get("href")
-            if link and link.startswith("/url?q="):
-                clean_link = link.split("/url?q=")[1].split("&sa=")[0]
-                if clean_link.startswith("http"):
-                    results.append(clean_link)
+        for item in soup.select("div.tF2Cxc"):
+            title = item.select_one("h3").text if item.select_one("h3") else ""
+            link = item.select_one("a")["href"] if item.select_one("a") else ""
+            description = item.select_one("span.aCOpRe").text if item.select_one("span.aCOpRe") else ""
+            if link:
+                results.append({"title": title, "link": link, "description": description})
                 if len(results) >= max_results:
                     break
-        for idx, link in enumerate(results):
-            print(f"{idx + 1}. {link}")
-        print()
+        for idx, result in enumerate(results):
+            print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
         return results
     except Exception as e:
         print(f"Erreur Google: {e}")
@@ -40,15 +39,16 @@ def bing_search(query, max_results=5):
         soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        for item in soup.find_all("a", href=True):
-            link = item.get("href")
-            if link and link.startswith("http") and "bing.com" not in link:
-                results.append(link)
+        for item in soup.find_all("li", class_="b_algo"):
+            title = item.find("h2").text if item.find("h2") else ""
+            link = item.find("a")["href"] if item.find("a") else ""
+            description = item.find("p").text if item.find("p") else ""
+            if link:
+                results.append({"title": title, "link": link, "description": description})
                 if len(results) >= max_results:
                     break
-        for idx, link in enumerate(results):
-            print(f"{idx + 1}. {link}")
-        print()
+        for idx, result in enumerate(results):
+            print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
         return results
     except Exception as e:
         print(f"Erreur Bing: {e}")
@@ -65,15 +65,15 @@ def duckduckgo_search(query, max_results=5):
         soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        for item in soup.find_all("a", href=True):
-            link = item.get("href")
-            if link.startswith("https://"):
-                results.append(link)
-                if len(results) >= max_results:
-                    break
-        for idx, link in enumerate(results):
-            print(f"{idx + 1}. {link}")
-        print()
+        for item in soup.find_all("a", class_="result__a", href=True):
+            title = item.text
+            link = item["href"]
+            description = ""  # DuckDuckGo descriptions might need extra parsing
+            results.append({"title": title, "link": link, "description": description})
+            if len(results) >= max_results:
+                break
+        for idx, result in enumerate(results):
+            print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
         return results
     except Exception as e:
         print(f"Erreur DuckDuckGo: {e}")
@@ -91,22 +91,18 @@ def torch_search(query, max_results=5):
 
         results = []
         for item in soup.find_all("a", href=True):
-            link = item.get("href")
-            if link.startswith("http"):
-                results.append(link)
-                if len(results) >= max_results:
-                    break
-        for idx, link in enumerate(results):
-            print(f"{idx + 1}. {link}")
-        print()
+            title = item.text.strip()
+            link = item["href"]
+            description = ""  # Torch descriptions might need extra parsing
+            results.append({"title": title, "link": link, "description": description})
+            if len(results) >= max_results:
+                break
+        for idx, result in enumerate(results):
+            print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
         return results
     except Exception as e:
         print(f"Erreur Torch: {e}")
         return []
-
-def filter_links(links):
-    filtered = [link for link in links if link.startswith("http") and "help" not in link]
-    return filtered
 
 def main():
     print("\n=== Multi-Search Engine Crawler ===")
@@ -114,18 +110,17 @@ def main():
 
     print("\nRecherche en cours...\n")
 
-    google_links = google_search(query)
-    bing_links = bing_search(query)
-    duckduckgo_links = duckduckgo_search(query)
-    torch_links = torch_search(query)
+    google_results = google_search(query)
+    bing_results = bing_search(query)
+    duckduckgo_results = duckduckgo_search(query)
+    torch_results = torch_search(query)
 
-    all_links = google_links + bing_links + duckduckgo_links + torch_links
-    unique_links = set(filter_links(all_links))
+    all_results = google_results + bing_results + duckduckgo_results + torch_results
 
     print("=== Résultats combinés ===")
-    if unique_links:
-        for idx, link in enumerate(unique_links):
-            print(f"{idx + 1}. {link}")
+    if all_results:
+        for idx, result in enumerate(all_results):
+            print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
     else:
         print("Aucun résultat pertinent trouvé.")
 
