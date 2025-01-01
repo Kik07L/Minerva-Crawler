@@ -54,9 +54,9 @@ def bing_search(query, max_results=5):
         print(f"Erreur Bing: {e}")
         return []
 
-def duckduckgo_search(query, max_results=5):
-    print("[DuckDuckGo Search]")
-    url = f"https://duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+def yahoo_search(query, max_results=5):
+    print("[Yahoo Search]")
+    url = f"https://search.yahoo.com/search?p={urllib.parse.quote(query)}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -65,23 +65,24 @@ def duckduckgo_search(query, max_results=5):
         soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        for item in soup.find_all("a", class_="result__a", href=True):
-            title = item.text
-            link = item["href"]
-            description = ""  # DuckDuckGo descriptions might need extra parsing
-            results.append({"title": title, "link": link, "description": description})
-            if len(results) >= max_results:
-                break
+        for item in soup.find_all("div", class_="dd algo algo-sr Sr"):  # Yahoo specific class names
+            title = item.find("h3").text if item.find("h3") else ""
+            link = item.find("a")["href"] if item.find("a") else ""
+            description = item.find("p").text if item.find("p") else ""
+            if link:
+                results.append({"title": title, "link": link, "description": description})
+                if len(results) >= max_results:
+                    break
         for idx, result in enumerate(results):
             print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
         return results
     except Exception as e:
-        print(f"Erreur DuckDuckGo: {e}")
+        print(f"Erreur Yahoo: {e}")
         return []
 
-def torch_search(query, max_results=5):
-    print("[Torch Search]")
-    url = f"https://www.torchtorsearch.com/search?q={urllib.parse.quote(query)}"
+def yandex_search(query, max_results=5):
+    print("[Yandex Search]")
+    url = f"https://yandex.com/search/?text={urllib.parse.quote(query)}"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -90,18 +91,19 @@ def torch_search(query, max_results=5):
         soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        for item in soup.find_all("a", href=True):
-            title = item.text.strip()
-            link = item["href"]
-            description = ""  # Torch descriptions might need extra parsing
-            results.append({"title": title, "link": link, "description": description})
-            if len(results) >= max_results:
-                break
+        for item in soup.find_all("li", class_="serp-item"):
+            title = item.find("h2").text if item.find("h2") else ""
+            link = item.find("a")["href"] if item.find("a") else ""
+            description = item.find("div", class_="text-container").text if item.find("div", class_="text-container") else ""
+            if link:
+                results.append({"title": title, "link": link, "description": description})
+                if len(results) >= max_results:
+                    break
         for idx, result in enumerate(results):
             print(f"{idx + 1}. {result['title']}\n   {result['link']}\n   {result['description']}\n")
         return results
     except Exception as e:
-        print(f"Erreur Torch: {e}")
+        print(f"Erreur Yandex: {e}")
         return []
 
 def main():
@@ -112,10 +114,10 @@ def main():
 
     google_results = google_search(query)
     bing_results = bing_search(query)
-    duckduckgo_results = duckduckgo_search(query)
-    torch_results = torch_search(query)
+    yahoo_results = yahoo_search(query)
+    yandex_results = yandex_search(query)
 
-    all_results = google_results + bing_results + duckduckgo_results + torch_results
+    all_results = google_results + bing_results + yahoo_results + yandex_results
 
     print("=== Résultats combinés ===")
     if all_results:
