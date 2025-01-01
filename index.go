@@ -31,7 +31,7 @@ func searchOnEngine(engine, query string, wg *sync.WaitGroup, results chan<- str
 		return
 	}
 
-	// Extraction de liens à partir du HTML
+	
 	links := extractLinks(string(body))
 	for _, link := range links {
 		results <- link
@@ -39,12 +39,12 @@ func searchOnEngine(engine, query string, wg *sync.WaitGroup, results chan<- str
 }
 
 func extractLinks(html string) []string {
-	// Utilisation d'une expression régulière pour extraire les liens des résultats
+	
 	var links []string
 	re := regexp.MustCompile(`https?://[^\s]+`)
 	matches := re.FindAllString(html, -1)
 
-	// Retirer les doublons (liens)
+	
 	linkMap := make(map[string]struct{})
 	for _, link := range matches {
 		linkMap[link] = struct{}{}
@@ -65,19 +65,19 @@ func main() {
 	var wg sync.WaitGroup
 	results := make(chan string, 100)
 
-	// Effectuer des recherches en parallèle sur plusieurs moteurs
+	
 	for _, engine := range searchEngines {
 		wg.Add(1)
 		go searchOnEngine(engine, query, &wg, results)
 	}
 
-	// Attendre que toutes les goroutines aient fini
+	
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
 
-	// Afficher les résultats
+	
 	fmt.Println("\nLiens pertinents trouvés :")
 	for link := range results {
 		fmt.Println(link)
