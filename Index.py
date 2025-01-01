@@ -13,11 +13,12 @@ def google_search(query, max_results=5):
         soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        for item in soup.select("a"):  # Google often changes class names; adjust as needed
+        for item in soup.select("a"):
             link = item.get("href")
             if link and link.startswith("/url?q="):
                 clean_link = link.split("/url?q=")[1].split("&sa=")[0]
-                results.append(clean_link)
+                if clean_link.startswith("http"):
+                    results.append(clean_link)
                 if len(results) >= max_results:
                     break
         for idx, link in enumerate(results):
@@ -41,7 +42,7 @@ def bing_search(query, max_results=5):
         results = []
         for item in soup.find_all("a", href=True):
             link = item.get("href")
-            if link and link.startswith("http"):
+            if link and link.startswith("http") and "bing.com" not in link:
                 results.append(link)
                 if len(results) >= max_results:
                     break
@@ -103,6 +104,10 @@ def torch_search(query, max_results=5):
         print(f"Erreur Torch: {e}")
         return []
 
+def filter_links(links):
+    filtered = [link for link in links if link.startswith("http") and "help" not in link]
+    return filtered
+
 def main():
     print("\n=== Multi-Search Engine Crawler ===")
     query = input("Entrez le mot-clé ou la phrase à rechercher : ")
@@ -114,10 +119,15 @@ def main():
     duckduckgo_links = duckduckgo_search(query)
     torch_links = torch_search(query)
 
+    all_links = google_links + bing_links + duckduckgo_links + torch_links
+    unique_links = set(filter_links(all_links))
+
     print("=== Résultats combinés ===")
-    unique_links = set(google_links + bing_links + duckduckgo_links + torch_links)
-    for idx, link in enumerate(unique_links):
-        print(f"{idx + 1}. {link}")
+    if unique_links:
+        for idx, link in enumerate(unique_links):
+            print(f"{idx + 1}. {link}")
+    else:
+        print("Aucun résultat pertinent trouvé.")
 
 if __name__ == "__main__":
     main()
