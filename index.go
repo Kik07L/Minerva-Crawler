@@ -144,9 +144,14 @@ func displayAnimation() {
 		for _, line := range asciiArt {
 			color := colors[i%len(colors)]
 			fmt.Println(color + line + colorReset)
-			time.Sleep(100 * time.Millisecond) // Adjust the delay as needed
+			time.Sleep(50 * time.Millisecond) // Adjust the delay to make it faster
 		}
 		clearScreen()
+	}
+
+	// Print the logo one last time to leave it displayed
+	for _, line := range asciiArt {
+		fmt.Println(line)
 	}
 }
 
