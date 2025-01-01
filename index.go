@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url" // Import du package net/url pour QueryUnescape
 	"regexp"
 	"strings"
 	"sync"
@@ -66,31 +67,42 @@ func extractLinks(html string) []string {
 }
 
 // Fonction pour extraire le nom de domaine (ex. https://example.com -> example.com)
-func getDomainName(url string) string {
+func getDomainName(link string) string {
 	re := regexp.MustCompile(`https?://([^/]+)`)
-	match := re.FindStringSubmatch(url)
+	match := re.FindStringSubmatch(link)
 	if len(match) > 1 {
 		return match[1]
 	}
-	return url
+	return link
 }
 
 // Fonction pour nettoyer l'URL (supprimer les paramètres et échapper les caractères)
-func cleanURL(url string) string {
+func cleanURL(rawURL string) string {
 	// Décoder les entités HTML comme &amp; en &
-	url = strings.ReplaceAll(url, "&amp;", "&")
+	rawURL = strings.ReplaceAll(rawURL, "&amp;", "&")
 
-	// Supprimer les paramètres après ?
-	if idx := strings.Index(url, "?"); idx != -1 {
-		url = url[:idx]
+	// Décoder l'URL si nécessaire (en utilisant le package net/url)
+	decodedURL, err := url.QueryUnescape(rawURL)
+	if err == nil {
+		rawURL = decodedURL
 	}
 
-	return url
+	// Supprimer les paramètres après ?
+	if idx := strings.Index(rawURL, "?"); idx != -1 {
+		rawURL = rawURL[:idx]
+	}
+
+	// Supprimer les fragments après #
+	if idx := strings.Index(rawURL, "#"); idx != -1 {
+		rawURL = rawURL[:idx]
+	}
+
+	return rawURL
 }
 
 // Fonction qui génère un lien cliquable dans certains terminaux (Mac/Linux)
-func clickableLink(displayName, url string) string {
-	return fmt.Sprintf("\033]8;;%s\033\\%s\033]8;;\033\\", url, displayName)
+func clickableLink(displayName, link string) string {
+	return fmt.Sprintf("\033]8;;%s\033\\%s\033]8;;\033\\", link, displayName)
 }
 
 func main() {
