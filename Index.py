@@ -8,21 +8,25 @@ def google_search(query, max_results=5):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    results = []
-    for item in soup.select("a"):  # Google often changes class names; adjust as needed
-        link = item.get("href")
-        if link and link.startswith("/url?q="):
-            clean_link = link.split("/url?q=")[1].split("&sa=")[0]
-            results.append(clean_link)
-            if len(results) >= max_results:
-                break
-    for idx, link in enumerate(results):
-        print(f"{idx + 1}. {link}")
-    print()
-    return results
+        results = []
+        for item in soup.select("a"):  # Google often changes class names; adjust as needed
+            link = item.get("href")
+            if link and link.startswith("/url?q="):
+                clean_link = link.split("/url?q=")[1].split("&sa=")[0]
+                results.append(clean_link)
+                if len(results) >= max_results:
+                    break
+        for idx, link in enumerate(results):
+            print(f"{idx + 1}. {link}")
+        print()
+        return results
+    except Exception as e:
+        print(f"Erreur Google: {e}")
+        return []
 
 def bing_search(query, max_results=5):
     print("[Bing Search]")
@@ -30,20 +34,24 @@ def bing_search(query, max_results=5):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    results = []
-    for item in soup.find_all("a", href=True):
-        link = item.get("href")
-        if link and link.startswith("http"):
-            results.append(link)
-            if len(results) >= max_results:
-                break
-    for idx, link in enumerate(results):
-        print(f"{idx + 1}. {link}")
-    print()
-    return results
+        results = []
+        for item in soup.find_all("a", href=True):
+            link = item.get("href")
+            if link and link.startswith("http"):
+                results.append(link)
+                if len(results) >= max_results:
+                    break
+        for idx, link in enumerate(results):
+            print(f"{idx + 1}. {link}")
+        print()
+        return results
+    except Exception as e:
+        print(f"Erreur Bing: {e}")
+        return []
 
 def duckduckgo_search(query, max_results=5):
     print("[DuckDuckGo Search]")
@@ -51,20 +59,24 @@ def duckduckgo_search(query, max_results=5):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    results = []
-    for item in soup.find_all("a", href=True):
-        link = item.get("href")
-        if link.startswith("https://"):
-            results.append(link)
-            if len(results) >= max_results:
-                break
-    for idx, link in enumerate(results):
-        print(f"{idx + 1}. {link}")
-    print()
-    return results
+        results = []
+        for item in soup.find_all("a", href=True):
+            link = item.get("href")
+            if link.startswith("https://"):
+                results.append(link)
+                if len(results) >= max_results:
+                    break
+        for idx, link in enumerate(results):
+            print(f"{idx + 1}. {link}")
+        print()
+        return results
+    except Exception as e:
+        print(f"Erreur DuckDuckGo: {e}")
+        return []
 
 def torch_search(query, max_results=5):
     print("[Torch Search]")
@@ -72,20 +84,24 @@ def torch_search(query, max_results=5):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, "html.parser")
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    results = []
-    for item in soup.find_all("a", href=True):
-        link = item.get("href")
-        if link.startswith("http"):
-            results.append(link)
-            if len(results) >= max_results:
-                break
-    for idx, link in enumerate(results):
-        print(f"{idx + 1}. {link}")
-    print()
-    return results
+        results = []
+        for item in soup.find_all("a", href=True):
+            link = item.get("href")
+            if link.startswith("http"):
+                results.append(link)
+                if len(results) >= max_results:
+                    break
+        for idx, link in enumerate(results):
+            print(f"{idx + 1}. {link}")
+        print()
+        return results
+    except Exception as e:
+        print(f"Erreur Torch: {e}")
+        return []
 
 def main():
     print("\n=== Multi-Search Engine Crawler ===")
