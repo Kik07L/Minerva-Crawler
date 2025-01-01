@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url" // Import du package net/url pour QueryUnescape
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -87,17 +87,45 @@ func cleanURL(rawURL string) string {
 		rawURL = decodedURL
 	}
 
-	// Supprimer les paramètres après ?
-	if idx := strings.Index(rawURL, "?"); idx != -1 {
-		rawURL = rawURL[:idx]
+	// Analyser l'URL pour séparer la base et les paramètres
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL // Si l'URL est mal formée, retourner telle quelle
 	}
 
-	// Supprimer les fragments après #
-	if idx := strings.Index(rawURL, "#"); idx != -1 {
-		rawURL = rawURL[:idx]
+	// Si l'URL commence directement par "&" après le domaine, corriger cela
+	if strings.HasPrefix(parsedURL.Path, "&") {
+		parsedURL.Path = parsedURL.Path[1:]
 	}
 
-	return rawURL
+	// Supprimer les paramètres inutiles (comme ceux de suivi)
+	queryParams := parsedURL.Query()
+	paramsToRemove := []string{
+		"sa", "ved", "usg", "ref", "tracking", "session", "utm_source", "utm_medium", "utm_campaign",
+	}
+
+	// On garde les paramètres nécessaires et on filtre ceux qui sont indésirables
+	for key := range queryParams {
+		if contains(paramsToRemove, key) {
+			queryParams.Del(key) // Supprimer les paramètres indésirables
+		}
+	}
+
+	// Reconstruire l'URL avec les paramètres filtrés
+	parsedURL.RawQuery = queryParams.Encode()
+
+	// Retourner l'URL nettoyée
+	return parsedURL.String()
+}
+
+// Fonction pour vérifier si un paramètre est indésirable
+func contains(slice []string, item string) bool {
+	for _, a := range slice {
+		if a == item {
+			return true
+		}
+	}
+	return false
 }
 
 // Fonction qui génère un lien cliquable dans certains terminaux (Mac/Linux)
